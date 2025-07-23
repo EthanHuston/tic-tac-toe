@@ -61,7 +61,7 @@ function Player(name, value) {
 const GameController = (function () {
   const board = GameBoard();
 
-  const players = [Player("Player One", 1), Player("Player Two", 2)];
+  const players = [Player("Player One", "X"), Player("Player Two", "O")];
 
   let activePlayer = players[0];
 
@@ -70,20 +70,57 @@ const GameController = (function () {
   };
 
   const getActivePlayer = () => activePlayer;
-  const printRound = () => {
+
+  const printRound = (winner) => {
     board.printBoard();
-    console.log(`${getActivePlayer().getName()}'s turn.`);
+    if (!winner) {
+      console.log(`${getActivePlayer().getName()}'s turn.`);
+    } else {
+      console.log(`${getActivePlayer().getName()} has won!`);
+    }
   };
   const playRound = (row, column) => {
     if (board.placeMark(row, column, getActivePlayer().getValue())) {
-      switchTurns();
-      printRound();
+      if (checkWin(getActivePlayer())) {
+        printRound(true);
+      } else {
+        switchTurns();
+        printRound(false);
+      }
     } else {
       console.log("A mark is already there, try a different place!");
     }
   };
 
-  printRound();
+  const checkWin = (player) => {
+    const gameBoard = board.getBoard();
+    //Rows and Columns
+    for (let i = 0; i < 3; i++) {
+      if (
+        gameBoard[i].every((cell) => cell.getValue === player.getValue()) ||
+        [gameBoard[0][i], gameBoard[1][i], gameBoard[2][i]].every(
+          (cell) => cell.getValue() === player.getValue()
+        )
+      ) {
+        return true;
+      }
+    }
+
+    //Diagonals
+    if (
+      [gameBoard[0][0], gameBoard[1][1], gameBoard[2][2]].every(
+        (cell) => cell.getValue() === player.getValue()
+      ) ||
+      [gameBoard[0][2], gameBoard[1][1], gameBoard[2][0]].every(
+        (cell) => cell.getValue() === player.getValue()
+      )
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  printRound(false);
 
   return {
     playRound,
